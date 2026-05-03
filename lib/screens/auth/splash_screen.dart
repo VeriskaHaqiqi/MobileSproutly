@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../app_colors.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -11,6 +12,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
+
   late AnimationController _controller;
   late Animation<double> _logoScale;
   late Animation<double> _logoOpacity;
@@ -59,9 +61,12 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
+    // ⏱ Delay lalu pindah ke Login
     Future.delayed(const Duration(milliseconds: 2800), () {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
+
+      Navigator.pushReplacement(
+        context,
         PageRouteBuilder(
           pageBuilder: (_, __, ___) => const LoginScreen(),
           transitionsBuilder: (_, animation, __, child) =>
@@ -85,20 +90,13 @@ class _SplashScreenState extends State<SplashScreen>
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF7DE8D8),
-              Color(0xFF5DCFCF),
-              Color(0xFFA8E6CF),
-            ],
-          ),
+          gradient: AppColors.splashGradient, // 👈 pakai dari AppColors
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo dibungkus kotak putih rounded — supaya keliatan di atas gradient
+
+            // 🔥 Logo Animation
             AnimatedBuilder(
               animation: _controller,
               builder: (context, _) => FadeTransition(
@@ -119,13 +117,10 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ],
                     ),
-                    // Pakai ClipRRect agar gambar tidak keluar dari rounded corner
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(32),
                       child: Image.asset(
                         'assets/images/logo_splash.png',
-                        width: 130,
-                        height: 130,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -136,7 +131,7 @@ class _SplashScreenState extends State<SplashScreen>
 
             const SizedBox(height: 28),
 
-            // Teks animasi muncul setelah logo
+            // 🔥 Text Animation
             AnimatedBuilder(
               animation: _controller,
               builder: (context, _) => FadeTransition(
@@ -151,7 +146,6 @@ class _SplashScreenState extends State<SplashScreen>
                           fontSize: 40,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
-                          letterSpacing: -0.5,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -159,9 +153,7 @@ class _SplashScreenState extends State<SplashScreen>
                         'Plant Care & Expert Consultation',
                         style: GoogleFonts.outfit(
                           fontSize: 13.5,
-                          fontWeight: FontWeight.w400,
                           color: Colors.white.withOpacity(0.85),
-                          letterSpacing: 0.3,
                         ),
                       ),
                     ],

@@ -19,6 +19,10 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _emailError;
   String? _passError;
 
+  bool isValidEmail(String email) {
+    return RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(email);
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -36,7 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
             begin: const Offset(1, 0),
             end: Offset.zero,
           ).animate(
-              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          ),
           child: child,
         ),
       ),
@@ -45,15 +50,25 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() {
+    final email = _emailController.text.trim();
+    final password = _passController.text.trim();
+
     setState(() {
-      _emailError = _emailController.text.trim().isEmpty
-          ? 'Email wajib diisi'
-          : null;
-      _passError = _passController.text.trim().isEmpty
-          ? 'Password wajib diisi'
-          : null;
+      // Email validation
+      if (email.isEmpty) {
+        _emailError = 'Email wajib diisi';
+      } else if (!isValidEmail(email)) {
+        _emailError = 'Username incorrect';
+      } else {
+        _emailError = null;
+      }
+
+      // Password validation
+      _passError = password.isEmpty ? 'Password wajib diisi' : null;
     });
+
     if (_emailError != null || _passError != null) return;
+
     _push(const HelloScreen());
   }
 
@@ -67,7 +82,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // App icon — kotak putih rounded dengan logo di dalam
               Container(
                 width: 64,
                 height: 64,
@@ -86,8 +100,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(18),
                   child: Image.asset(
                     'assets/images/logo_login.png',
-                    width: 64,
-                    height: 64,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -100,14 +112,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   fontSize: 30,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
-                  letterSpacing: -0.4,
                 ),
               ),
               const SizedBox(height: 6),
+
               Text(
                 'Sign in to continue your plant journey',
                 style: GoogleFonts.outfit(
-                    fontSize: 13.5, color: AppColors.textGrey),
+                  fontSize: 13.5,
+                  color: AppColors.textGrey,
+                ),
               ),
               const SizedBox(height: 30),
 
@@ -145,19 +159,30 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 18),
 
-              PrimaryButton(text: 'Sign In', onPressed: _handleLogin),
+              PrimaryButton(
+                text: 'Sign In',
+                onPressed: _handleLogin,
+              ),
               const SizedBox(height: 20),
 
-              Row(children: [
-                const Expanded(child: Divider(color: AppColors.borderColor)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('or continue with',
+              Row(
+                children: [
+                  const Expanded(
+                      child: Divider(color: AppColors.borderColor)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      'or continue with',
                       style: GoogleFonts.outfit(
-                          fontSize: 13, color: AppColors.textGrey)),
-                ),
-                const Expanded(child: Divider(color: AppColors.borderColor)),
-              ]),
+                        fontSize: 13,
+                        color: AppColors.textGrey,
+                      ),
+                    ),
+                  ),
+                  const Expanded(
+                      child: Divider(color: AppColors.borderColor)),
+                ],
+              ),
               const SizedBox(height: 14),
 
               SizedBox(
@@ -169,14 +194,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     side: const BorderSide(
                         color: AppColors.borderColor, width: 1.5),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     backgroundColor: AppColors.white,
                   ),
-                  icon: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CustomPaint(painter: _GoogleLogoPainter()),
-                  ),
+                  icon: const Icon(Icons.g_mobiledata, size: 24),
                   label: Text(
                     'Continue with Google',
                     style: GoogleFonts.outfit(
@@ -195,7 +217,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       "Don't have an account?",
                       style: GoogleFonts.outfit(
-                          fontSize: 13.5, color: AppColors.textGrey),
+                        fontSize: 13.5,
+                        color: AppColors.textGrey,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     GestureDetector(
@@ -218,34 +242,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
-
-class _GoogleLogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = size.width / 20;
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    paint.color = const Color(0xFF4285F4);
-    canvas.drawRect(Rect.fromLTWH(10 * s, 1 * s, 9 * s, 7.5 * s), paint);
-
-    paint.color = const Color(0xFF34A853);
-    canvas.drawRect(Rect.fromLTWH(0, 11.5 * s, 10 * s, 7.5 * s), paint);
-
-    paint.color = const Color(0xFFFBBC05);
-    canvas.drawRect(Rect.fromLTWH(0, 5 * s, 4 * s, 6 * s), paint);
-
-    paint.color = const Color(0xFFEA4335);
-    canvas.drawRect(Rect.fromLTWH(0, 0, 13 * s, 5 * s), paint);
-
-    // White center circle to create the G cutout look
-    paint.color = Colors.white;
-    canvas.drawCircle(Offset(10 * s, 10 * s), 5.5 * s, paint);
-
-    paint.color = const Color(0xFF4285F4);
-    canvas.drawRect(Rect.fromLTWH(9.5 * s, 8.5 * s, 9 * s, 3 * s), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
