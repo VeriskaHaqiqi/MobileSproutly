@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../app_colors.dart';
 import '../../app_widgets.dart';
-import 'hello_screen.dart';
+import 'login_screen.dart';
+import 'expert_register.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -27,6 +28,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _passErr;
   String? _confirmErr;
 
+  bool _passVisible = false;
+  bool _confirmVisible = false;
+
+  bool isValidGmail(String email) {
+    return RegExp(r'^[\w\.-]+@gmail\.com$').hasMatch(email);
+  }
+
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -39,18 +47,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _handleRegister() {
     setState(() {
-      _nameErr =
-          _nameCtrl.text.trim().isEmpty ? 'Nama wajib diisi' : null;
-      _emailErr =
-          _emailCtrl.text.trim().isEmpty ? 'Email wajib diisi' : null;
+      _nameErr = _nameCtrl.text.trim().isEmpty ? 'Full name is required' : null;
+
+      if (_emailCtrl.text.trim().isEmpty) {
+        _emailErr = 'Email is required';
+      } else if (!isValidGmail(_emailCtrl.text.trim())) {
+        _emailErr = 'Please use a @gmail.com address';
+      } else {
+        _emailErr = null;
+      }
+
       _phoneErr =
-          _phoneCtrl.text.trim().isEmpty ? 'Nomor HP wajib diisi' : null;
-      _passErr =
-          _passCtrl.text.trim().isEmpty ? 'Password wajib diisi' : null;
+          _phoneCtrl.text.trim().isEmpty ? 'Phone number is required' : null;
+
+      _passErr = _passCtrl.text.trim().isEmpty ? 'Password is required' : null;
+
       if (_confirmCtrl.text.trim().isEmpty) {
-        _confirmErr = 'Konfirmasi password wajib diisi';
+        _confirmErr = 'Please confirm your password';
       } else if (_confirmCtrl.text != _passCtrl.text) {
-        _confirmErr = 'Password tidak cocok';
+        _confirmErr = 'Passwords do not match';
       } else {
         _confirmErr = null;
       }
@@ -62,20 +77,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _passErr != null ||
         _confirmErr != null) return;
 
+    // Setelah register berhasil → kembali ke LoginScreen
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const LoginScreen(),
+        transitionsBuilder: (_, animation, __, child) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+      (route) => false,
+    );
+  }
+
+  void _goToExpertRegister() {
     Navigator.of(context).push(PageRouteBuilder(
-      pageBuilder: (_, __, ___) => const HelloScreen(),
+      pageBuilder: (_, __, ___) => const ExpertRegisterScreen(),
       transitionsBuilder: (_, animation, __, child) => FadeTransition(
         opacity: animation,
         child: SlideTransition(
           position: Tween<Offset>(
-            begin: const Offset(0, 0.08),
+            begin: const Offset(1, 0),
             end: Offset.zero,
           ).animate(
               CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
           child: child,
         ),
       ),
-      transitionDuration: const Duration(milliseconds: 400),
+      transitionDuration: const Duration(milliseconds: 350),
     ));
   }
 
@@ -89,9 +119,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Back Button ──
               const BackButtonWidget(),
               const SizedBox(height: 12),
 
+              // ── Heading ──
               Text(
                 'Create Account',
                 style: GoogleFonts.outfit(
@@ -109,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Tab switcher
+              // ── Tab Switcher ──
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
@@ -123,6 +155,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 20),
 
+              // ── Form Fields ──
               AppTextField(
                 label: 'Full Name',
                 hint: 'John Doe',
@@ -130,24 +163,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 errorText: _nameErr,
               ),
               const SizedBox(height: 14),
+
               AppTextField(
                 label: 'Email',
-                hint: 'your@email.com',
+                hint: 'your@gmail.com',
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
                 errorText: _emailErr,
               ),
               const SizedBox(height: 14),
+
               AppTextField(
                 label: 'Phone Number',
-                hint: '+1 (555) 000-0000',
+                hint: '+62 812 3456 7890',
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
                 errorText: _phoneErr,
               ),
               const SizedBox(height: 14),
 
-              // Gender
+              // ── Gender ──
               Text(
                 'Gender',
                 style: GoogleFonts.outfit(
@@ -158,8 +193,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 8),
               Row(
-                children: ['Male', 'Female', 'Other'].map((g) {
-                  final isLast = g == 'Other';
+                children: ['Male', 'Female'].map((g) {
+                  final isLast = g == 'Female';
                   return Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(right: isLast ? 0 : 10),
@@ -167,7 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onTap: () => setState(() => _selectedGender = g),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 11),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
                             color: _selectedGender == g
                                 ? AppColors.teal.withOpacity(0.08)
@@ -199,32 +234,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 14),
 
-              AppTextField(
+              // ── Password dengan toggle visibility ──
+              _buildPasswordField(
                 label: 'Password',
                 hint: '••••••••',
                 controller: _passCtrl,
-                obscureText: true,
                 errorText: _passErr,
+                isVisible: _passVisible,
+                onToggle: () => setState(() => _passVisible = !_passVisible),
               ),
               const SizedBox(height: 14),
-              AppTextField(
+
+              // ── Confirm Password dengan toggle visibility ──
+              _buildPasswordField(
                 label: 'Confirm Password',
                 hint: '••••••••',
                 controller: _confirmCtrl,
-                obscureText: true,
                 errorText: _confirmErr,
+                isVisible: _confirmVisible,
+                onToggle: () =>
+                    setState(() => _confirmVisible = !_confirmVisible),
               ),
               const SizedBox(height: 22),
 
-              PrimaryButton(
-                  text: 'Create Account', onPressed: _handleRegister),
+              // ── Create Account Button ──
+              PrimaryButton(text: 'Create Account', onPressed: _handleRegister),
               const SizedBox(height: 22),
 
+              // ── Log In Link ──
               Center(
                 child: Column(
                   children: [
                     Text(
-                      "Already have an account?",
+                      'Already have an account?',
                       style: GoogleFonts.outfit(
                           fontSize: 13.5, color: AppColors.textGrey),
                     ),
@@ -232,7 +274,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Text(
-                        'Sign In',
+                        'Log In',
                         style: GoogleFonts.outfit(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w600,
@@ -250,11 +292,102 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  // ── Password Field dengan Eye Toggle ────────────────────────────────────────
+  Widget _buildPasswordField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    required bool isVisible,
+    required VoidCallback onToggle,
+    String? errorText,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.outfit(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color:
+                  errorText != null ? Colors.redAccent : AppColors.borderColor,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  obscureText: !isVisible,
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    color: AppColors.textDark,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: GoogleFonts.outfit(
+                      fontSize: 14,
+                      color: AppColors.textGrey.withOpacity(0.6),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    isDense: true,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: onToggle,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 14),
+                  child: Icon(
+                    isVisible
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    size: 20,
+                    color: AppColors.textGrey,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (errorText != null) ...[
+          const SizedBox(height: 5),
+          Text(
+            errorText,
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              color: Colors.redAccent,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  // ── Tab Builder ──────────────────────────────────────────────────────────────
   Widget _buildTab(String label, bool isUser) {
     final isActive = _isUser == isUser;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _isUser = isUser),
+        onTap: () {
+          if (isUser) {
+            setState(() => _isUser = true);
+          } else {
+            _goToExpertRegister();
+          }
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -267,7 +400,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       color: AppColors.teal.withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
-                    )
+                    ),
                   ]
                 : null,
           ),
