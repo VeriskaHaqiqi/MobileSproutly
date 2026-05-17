@@ -4,7 +4,7 @@ import '../../app_colors.dart';
 import '../../app_widgets.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
-import 'hello_screen.dart';
+import '../user/user_home.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,8 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _emailError;
   String? _passError;
 
-  bool isValidEmail(String email) {
-    return RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(email);
+  bool isValidGmail(String email) {
+    return RegExp(r'^[\w\.-]+@gmail\.com$').hasMatch(email);
   }
 
   @override
@@ -49,27 +49,33 @@ class _LoginScreenState extends State<LoginScreen> {
     ));
   }
 
+  void _pushReplacement(Widget screen) {
+    Navigator.of(context).pushReplacement(PageRouteBuilder(
+      pageBuilder: (_, __, ___) => screen,
+      transitionsBuilder: (_, animation, __, child) =>
+          FadeTransition(opacity: animation, child: child),
+      transitionDuration: const Duration(milliseconds: 400),
+    ));
+  }
+
   void _handleLogin() {
     final email = _emailController.text.trim();
     final password = _passController.text.trim();
 
     setState(() {
-      // Email validation
       if (email.isEmpty) {
-        _emailError = 'Email wajib diisi';
-      } else if (!isValidEmail(email)) {
-        _emailError = 'Username incorrect';
+        _emailError = 'Email is required';
+      } else if (!isValidGmail(email)) {
+        _emailError = 'Please use a @gmail.com address';
       } else {
         _emailError = null;
       }
-
-      // Password validation
-      _passError = password.isEmpty ? 'Password wajib diisi' : null;
+      _passError = password.isEmpty ? 'Password is required' : null;
     });
 
     if (_emailError != null || _passError != null) return;
 
-    _push(const HelloScreen());
+    _pushReplacement(const HomeUserScreen());
   }
 
   @override
@@ -82,30 +88,40 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Logo: background tosca penuh, icon putih ──
               Container(
-                width: 64,
-                height: 64,
+                width: 70,
+                height: 70,
                 decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(18),
+                  color: const Color(0xFF5DCFCF),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.teal.withOpacity(0.35),
-                      blurRadius: 16,
+                      color: const Color(0xFF5DCFCF).withOpacity(0.4),
+                      blurRadius: 18,
                       offset: const Offset(0, 6),
                     ),
                   ],
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
+                child: Center(
                   child: Image.asset(
-                    'assets/images/logo_login.png',
-                    fit: BoxFit.cover,
+                    'assets/images/logo.png',
+                    width: 35,
+                    height: 35,
+                    fit: BoxFit.contain,
+                    color: Colors.white,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.eco_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 22),
 
+              const SizedBox(height: 24),
+
+              // ── Heading ──
               Text(
                 'Welcome Back',
                 style: GoogleFonts.outfit(
@@ -117,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 6),
 
               Text(
-                'Sign in to continue your plant journey',
+                'Log in to continue your plant journey',
                 style: GoogleFonts.outfit(
                   fontSize: 13.5,
                   color: AppColors.textGrey,
@@ -125,15 +141,17 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
 
+              // ── Email Field ──
               AppTextField(
                 label: 'Email',
-                hint: 'your@email.com',
+                hint: 'your@gmail.com',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 errorText: _emailError,
               ),
               const SizedBox(height: 16),
 
+              // ── Password Field ──
               AppTextField(
                 label: 'Password',
                 hint: '••••••••',
@@ -143,6 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 10),
 
+              // ── Forgot Password ──
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
@@ -159,16 +178,17 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 18),
 
+              // ── Log In Button ──
               PrimaryButton(
-                text: 'Sign In',
+                text: 'Log In',
                 onPressed: _handleLogin,
               ),
               const SizedBox(height: 20),
 
+              // ── Divider ──
               Row(
                 children: [
-                  const Expanded(
-                      child: Divider(color: AppColors.borderColor)),
+                  const Expanded(child: Divider(color: AppColors.borderColor)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
@@ -179,15 +199,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  const Expanded(
-                      child: Divider(color: AppColors.borderColor)),
+                  const Expanded(child: Divider(color: AppColors.borderColor)),
                 ],
               ),
               const SizedBox(height: 14),
 
+              // ── Google Button ──
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: OutlinedButton(
                   onPressed: _handleLogin,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -198,19 +218,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     backgroundColor: AppColors.white,
                   ),
-                  icon: const Icon(Icons.g_mobiledata, size: 24),
-                  label: Text(
-                    'Continue with Google',
-                    style: GoogleFonts.outfit(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textDark,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Google "G" logo dengan warna resmi
+                      SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CustomPaint(painter: _GoogleGPainter()),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Continue with Google',
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
               const SizedBox(height: 28),
 
+              // ── Register Link ──
               Center(
                 child: Column(
                   children: [
@@ -242,4 +274,55 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
+
+// ─── Google "G" CustomPainter ─────────────────────────────────────────────────
+// Warna resmi: Biru #4285F4 · Merah #EA4335 · Kuning #FBBC05 · Hijau #34A853
+class _GoogleGPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final r = size.width / 2;
+    final sw = size.width * 0.22;
+    final hs = sw / 2;
+
+    final p = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = sw
+      ..strokeCap = StrokeCap.butt;
+
+    // Merah — kiri atas
+    p.color = const Color(0xFFEA4335);
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r - hs),
+        _r(225), _r(45), false, p);
+
+    // Kuning — bawah
+    p.color = const Color(0xFFFBBC05);
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r - hs),
+        _r(270), _r(90), false, p);
+
+    // Hijau — kanan bawah
+    p.color = const Color(0xFF34A853);
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r - hs),
+        _r(0), _r(90), false, p);
+
+    // Biru — kanan atas ke kiri
+    p.color = const Color(0xFF4285F4);
+    canvas.drawArc(Rect.fromCircle(center: Offset(cx, cy), radius: r - hs),
+        _r(90), _r(135), false, p);
+
+    // Bar horizontal biru
+    canvas.drawRect(
+      Rect.fromLTRB(cx, cy - hs / 2, size.width, cy + hs / 2),
+      Paint()
+        ..color = const Color(0xFF4285F4)
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  double _r(double deg) => deg * 3.14159265358979 / 180;
+
+  @override
+  bool shouldRepaint(covariant CustomPainter _) => false;
 }
