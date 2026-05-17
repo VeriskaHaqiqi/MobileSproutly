@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'screens/auth/splash_screen.dart';
+
+import 'screens/user/user_home.dart';
+
+// Sebelumnya:
+// import 'screens/auth/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
     ),
   );
+
   runApp(const SproutlyApp());
 }
 
@@ -25,13 +34,21 @@ class SproutlyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF5DCFCF),
+          seedColor: const Color(0xFF76D7EA),
         ),
-        textTheme: GoogleFonts.outfitTextTheme(),
+
+        // Sebelumnya:
+        // textTheme: GoogleFonts.outfitTextTheme(),
+
+        textTheme: GoogleFonts.interTextTheme(),
         scaffoldBackgroundColor: const Color(0xFFF0F4F3),
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
+
+      // Sebelumnya:
+      // home: const SplashScreen(),
+
+      home: const HomeUserScreen(),
     );
   }
 }
