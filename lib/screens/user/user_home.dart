@@ -7,127 +7,45 @@ import 'user_consult.dart';
 import 'user_setting.dart';
 import 'user_detail_artikel.dart';
 
-// ─── Color Palette ────────────────────────────────────────────────────────────
-const Color kYellow = Color(0xFFFFFF9F);
-const Color kLightGreen = Color(0xFFD0FF99);
-const Color kGreen = Color(0xFF99FF99);
-const Color kTeal = Color(0xFF76EAD0);
-const Color kBlue = Color(0xFF76D7EA);
-const Color kScaffold = Color(0xFFF0F4F3);
+const Color kHomeYellow = Color(0xFFFFFF9F);
+const Color kHomeLightGreen = Color(0xFFD0FF99);
+const Color kHomeGreen = Color(0xFF99FF99);
+const Color kHomeTeal = Color(0xFF76EAD0);
+const Color kHomeBlue = Color(0xFF76D7EA);
+const Color kHomeScaffold = Color(0xFFF0F4F3);
+const Color kHomeDark = Color(0xFF1E2E2B);
 
-// ─── Dummy Article Data ───────────────────────────────────────────────────────
-final List<Map<String, String>> _allArticles = [
+final List<Map<String, dynamic>> _homeActivities = [
   {
-    'category': 'Houseplants',
-    'title': 'Essential Care Tips for Tropical Houseplants',
-    'author': 'Dr. Emily Chen',
-    'time': '2 days ago',
-    'plants': 'monstera philodendron pothos snake plant calathea peace lily',
-    'image':
-        'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'category': 'Home Vegetables',
-    'title': 'Optimizing Sunlight for Your Home Vegetable Garden',
-    'author': 'Dr. Mark Lee',
-    'time': '5 days ago',
-    'plants': 'chili tomato eggplant spinach pak choi lettuce vegetable garden',
-    'image':
-        'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'category': 'Houseplants',
-    'title': 'How to Keep Orchids Blooming All Year',
-    'author': 'Dr. Sarah Lee',
-    'time': '1 week ago',
-    'plants': 'orchid orchids flowering plant indoor houseplant',
-    'image':
-        'https://images.unsplash.com/photo-1490750967868-88df5691cc5e?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'category': 'Plant Care',
-    'title': 'Watering Schedule for Indoor Plants',
-    'author': 'Dr. James Wilson',
-    'time': '1 week ago',
-    'plants': 'watering indoor plants cactus succulent zz plant snake plant',
-    'image':
-        'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'category': 'Plant Health',
-    'title': 'Common Plant Diseases and How to Treat Them',
-    'author': 'Dr. Emily Chen',
-    'time': '2 weeks ago',
-    'plants': 'plant disease leaf spot root rot pest aglaonema calathea',
-    'image':
-        'https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'category': 'Herbs & Kitchen Spices',
-    'title': 'Growing Herbs in Small Spaces at Home',
-    'author': 'Dr. Mark Lee',
-    'time': '2 weeks ago',
-    'plants': 'ginger turmeric lemongrass mint basil rosemary oregano herbs',
-    'image':
-        'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'category': 'Potted Fruit Plants',
-    'title': "Beginner's Guide to Starting Potted Fruit Plants",
-    'author': 'Dr. Sarah Lee',
-    'time': '3 weeks ago',
-    'plants':
-        'orange lemon guava strawberry mango avocado dragon fruit potted fruit',
-    'image':
-        'https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=800&q=80',
-  },
-];
-
-// ─── Dummy Activity Data ──────────────────────────────────────────────────────
-final List<Map<String, dynamic>> _activities = [
-  {
-    'icon': 'assets/consultation.png',
-    'fallbackIcon': Icons.chat_bubble_outline,
+    'icon': Icons.chat_bubble_outline,
     'title': 'Dr. James Wilson replied',
     'subtitle': 'Your orchid consultation has a new message',
     'time': '10 minutes ago',
-    'color': kTeal,
+    'color': kHomeTeal,
   },
   {
-    'icon': 'assets/reviews.png',
-    'fallbackIcon': Icons.star_border,
+    'icon': Icons.star_border,
     'title': 'Rate your last session',
     'subtitle': 'Share your experience with Dr. Sarah Lee',
     'time': '1 hour ago',
-    'color': kYellow,
+    'color': kHomeYellow,
   },
   {
-    'icon': 'assets/ikon manage schedule.png',
-    'fallbackIcon': Icons.calendar_today_outlined,
+    'icon': Icons.calendar_today_outlined,
     'title': 'Upcoming Consultation',
     'subtitle': 'Your session with Dr. Emily Chen starts tomorrow',
     'time': '3 hours ago',
-    'color': kLightGreen,
+    'color': kHomeLightGreen,
   },
   {
-    'icon': 'assets/payment.png',
-    'fallbackIcon': Icons.payment_outlined,
+    'icon': Icons.payment_outlined,
     'title': 'Payment Confirmed',
     'subtitle': 'Your consultation payment has been received',
     'time': 'Yesterday',
-    'color': kBlue,
-  },
-  {
-    'icon': 'assets/article.png',
-    'fallbackIcon': Icons.article_outlined,
-    'title': 'New Article Available',
-    'subtitle': 'Read the latest guide about indoor plant care',
-    'time': '2 days ago',
-    'color': kGreen,
+    'color': kHomeBlue,
   },
 ];
 
-// ─── Home Screen ──────────────────────────────────────────────────────────────
 class HomeUserScreen extends StatefulWidget {
   const HomeUserScreen({super.key});
 
@@ -136,6 +54,11 @@ class HomeUserScreen extends StatefulWidget {
 }
 
 class _HomeUserScreenState extends State<HomeUserScreen> {
+  List<ArticleItem> get _recommendedArticles {
+    if (allArticles.length <= 7) return allArticles;
+    return allArticles.sublist(0, 7);
+  }
+
   void _goToSearchConsultation() {
     Navigator.push(
       context,
@@ -172,13 +95,15 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
     );
   }
 
-  void _goToArticleDetail() {
+  void _goToArticleDetail(ArticleItem article) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const UserDetailArtikelScreen(),
+        builder: (_) => UserDetailArtikelScreen(article: article),
       ),
-    );
+    ).then((_) {
+      setState(() {});
+    });
   }
 
   void _onBottomNavTapped(int index) {
@@ -196,11 +121,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kScaffold,
-      resizeToAvoidBottomInset: true,
+      backgroundColor: kHomeScaffold,
       body: Column(
         children: [
-          _buildGradientHeader(),
+          _buildHeader(),
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -224,67 +148,63 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
     );
   }
 
-  Widget _buildGradientHeader() {
+  Widget _buildHeader() {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [kBlue, kTeal],
+          colors: [kHomeBlue, kHomeTeal],
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 22),
-          child: _buildGreetingRow(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hello',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.88),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Sarah Johnson',
+                    style: GoogleFonts.inter(
+                      fontSize: 22,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.notifications_outlined,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildGreetingRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Hello',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.white.withOpacity(0.88),
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Sarah Johnson',
-              style: GoogleFonts.inter(
-                fontSize: 22,
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.25),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.notifications_outlined,
-            color: Colors.white,
-            size: 22,
-          ),
-        ),
-      ],
     );
   }
 
@@ -297,7 +217,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [kLightGreen, kGreen],
+            colors: [kHomeLightGreen, kHomeGreen],
           ),
           borderRadius: BorderRadius.circular(20),
         ),
@@ -358,24 +278,11 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                 color: Colors.white.withOpacity(0.55),
                 borderRadius: BorderRadius.circular(22),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Image.asset(
-                  'assets/vector.png',
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) {
-                    return Image.asset(
-                      'assets/consultation.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) {
-                        return const Icon(
-                          Icons.local_florist_outlined,
-                          color: Colors.black45,
-                          size: 36,
-                        );
-                      },
-                    );
-                  },
+              child: const Center(
+                child: Icon(
+                  Icons.local_florist_rounded,
+                  color: kHomeDark,
+                  size: 52,
                 ),
               ),
             ),
@@ -386,6 +293,8 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
   }
 
   Widget _buildArticlesSection() {
+    final articles = _recommendedArticles;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -411,7 +320,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                     'See All',
                     style: GoogleFonts.inter(
                       fontSize: 13,
-                      color: kBlue,
+                      color: kHomeBlue,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -426,10 +335,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.only(left: 20, right: 6),
-            itemCount: _allArticles.length,
+            itemCount: articles.length,
             physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
-              return _buildArticleCard(_allArticles[index]);
+              return _buildArticleCard(articles[index]);
             },
           ),
         ),
@@ -437,10 +346,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
     );
   }
 
-  Widget _buildArticleCard(Map<String, String> article) {
+  Widget _buildArticleCard(ArticleItem article) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: _goToArticleDetail,
+      onTap: () => _goToArticleDetail(article),
       child: Container(
         width: 214,
         margin: const EdgeInsets.only(right: 14),
@@ -458,10 +367,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildArticleCover(
-              imageUrl: article['image'] ?? '',
-              category: article['category'] ?? '',
-            ),
+            _buildArticleCover(article),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
@@ -469,7 +375,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      article['category'] ?? '',
+                      article.category,
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         color: Colors.grey.shade500,
@@ -479,7 +385,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                     const SizedBox(height: 4),
                     Expanded(
                       child: Text(
-                        article['title'] ?? '',
+                        article.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
@@ -495,7 +401,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                       children: [
                         Flexible(
                           child: Text(
-                            article['author'] ?? '',
+                            article.author,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
                               fontSize: 11,
@@ -514,7 +420,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                           ),
                         ),
                         Text(
-                          article['time'] ?? '',
+                          article.time,
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             color: Colors.grey.shade400,
@@ -532,42 +438,29 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
     );
   }
 
-  Widget _buildArticleCover({
-    required String imageUrl,
-    required String category,
-  }) {
+  Widget _buildArticleCover(ArticleItem article) {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       child: SizedBox(
         height: 112,
         width: double.infinity,
         child: Image.network(
-          imageUrl,
+          article.imageUrl,
           fit: BoxFit.cover,
           gaplessPlayback: true,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
-
-            return _articleFallback(
-              category: category,
-              isLoading: true,
-            );
+            return _articleFallback(article.category, true);
           },
           errorBuilder: (_, __, ___) {
-            return _articleFallback(
-              category: category,
-              isLoading: false,
-            );
+            return _articleFallback(article.category, false);
           },
         ),
       ),
     );
   }
 
-  Widget _articleFallback({
-    required String category,
-    required bool isLoading,
-  }) {
+  Widget _articleFallback(String category, bool isLoading) {
     return Container(
       height: 112,
       width: double.infinity,
@@ -575,8 +468,8 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            kLightGreen.withOpacity(0.85),
-            kTeal.withOpacity(0.75),
+            kHomeLightGreen.withOpacity(0.85),
+            kHomeTeal.withOpacity(0.75),
           ],
         ),
       ),
@@ -635,7 +528,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        ..._activities.map((activity) {
+        ..._homeActivities.map((activity) {
           return _buildActivityItem(activity);
         }),
       ],
@@ -667,18 +560,10 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Image.asset(
-                activity['icon'] as String,
-                width: 22,
-                height: 22,
+              child: Icon(
+                activity['icon'] as IconData,
                 color: Colors.black54,
-                errorBuilder: (_, __, ___) {
-                  return Icon(
-                    activity['fallbackIcon'] as IconData,
-                    color: Colors.black45,
-                    size: 21,
-                  );
-                },
+                size: 22,
               ),
             ),
           ),
@@ -723,22 +608,22 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
     final List<Map<String, dynamic>> items = [
       {
         'label': 'Home',
-        'icon': 'assets/dashboard.png',
+        'icon': 'assets/images/home.png',
         'fallback': Icons.home_outlined,
       },
       {
         'label': 'Articles',
-        'icon': 'assets/article.png',
+        'icon': 'assets/images/article.png',
         'fallback': Icons.article_outlined,
       },
       {
         'label': 'Consultations',
-        'icon': 'assets/consultation.png',
+        'icon': 'assets/images/consultation.png',
         'fallback': Icons.chat_bubble_outline,
       },
       {
         'label': 'Account',
-        'icon': 'assets/user.png',
+        'icon': 'assets/images/user.png',
         'fallback': Icons.person_outline,
       },
     ];
@@ -777,11 +662,13 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                         items[index]['icon'] as String,
                         width: 24,
                         height: 24,
-                        color: isSelected ? kBlue : Colors.grey.shade400,
+                        fit: BoxFit.contain,
+                        color: isSelected ? kHomeBlue : Colors.grey.shade400,
                         errorBuilder: (_, __, ___) {
                           return Icon(
                             items[index]['fallback'] as IconData,
-                            color: isSelected ? kBlue : Colors.grey.shade400,
+                            color:
+                                isSelected ? kHomeBlue : Colors.grey.shade400,
                             size: 24,
                           );
                         },
@@ -793,7 +680,7 @@ class _HomeUserScreenState extends State<HomeUserScreen> {
                           fontSize: 11,
                           fontWeight:
                               isSelected ? FontWeight.w600 : FontWeight.w400,
-                          color: isSelected ? kBlue : Colors.grey.shade400,
+                          color: isSelected ? kHomeBlue : Colors.grey.shade400,
                         ),
                       ),
                     ],
