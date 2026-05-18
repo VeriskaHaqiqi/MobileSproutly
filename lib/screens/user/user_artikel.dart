@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'user_home.dart';
 import 'user_bookmark_artikel.dart';
 import 'user_detail_artikel.dart';
@@ -13,8 +12,9 @@ const Color kGreen = Color(0xFF99FF99);
 const Color kLGreen = Color(0xFFD0FF99);
 const Color kYellow = Color(0xFFFFFF9F);
 const Color kScaffold = Color(0xFFF0F4F3);
-const Color _kTealMain = Color(0xFF5DCFCF);
+const Color kTealMain = Color(0xFF5DCFCF);
 
+// ─── Article Model ────────────────────────────────────────────────────────────
 class ArticleItem {
   final String id;
   final String category;
@@ -35,11 +35,14 @@ class ArticleItem {
   });
 }
 
-// PENTING: namanya allArticles, bukan _allArticles
+// ─── 4 Kategori resmi Sproutly ────────────────────────────────────────────────
+// Ornamental Plants | Vegetables & Food Crops | Fruit Plants | Herbs & Spices
+
 final List<ArticleItem> allArticles = [
+  // ── Ornamental Plants ──────────────────────────────────────────────────────
   ArticleItem(
     id: '1',
-    category: 'Indoor Plants',
+    category: 'Ornamental Plants',
     title: 'Complete Guide to Growing Monstera Deliciosa Indoors',
     author: 'Sarah Johnson',
     time: '2 days ago',
@@ -47,35 +50,8 @@ final List<ArticleItem> allArticles = [
         'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=600&q=80',
   ),
   ArticleItem(
-    id: '2',
-    category: 'Hydroponics',
-    title: "Beginner's Guide to Hydroponic Lettuce Farming",
-    author: 'Michael Chen',
-    time: '5 days ago',
-    imageUrl:
-        'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=600&q=80',
-  ),
-  ArticleItem(
-    id: '3',
-    category: 'Pest Control',
-    title: 'Natural Ways to Control Aphids Without Chemicals',
-    author: 'Emma Rodriguez',
-    time: '1 week ago',
-    imageUrl:
-        'https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=600&q=80',
-  ),
-  ArticleItem(
-    id: '4',
-    category: 'Outdoor Plants',
-    title: 'Planning Your First Vegetable Garden: A Step-by-Step Guide',
-    author: 'David Park',
-    time: '1 week ago',
-    imageUrl:
-        'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80',
-  ),
-  ArticleItem(
     id: '5',
-    category: 'Indoor Plants',
+    category: 'Ornamental Plants',
     title: 'Top 10 Low-Maintenance Indoor Plants for Busy People',
     author: 'Lisa Thompson',
     time: '2 weeks ago',
@@ -83,35 +59,8 @@ final List<ArticleItem> allArticles = [
         'https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=600&q=80',
   ),
   ArticleItem(
-    id: '6',
-    category: 'Outdoor Plants',
-    title: 'Growing Tomatoes: From Seed to Harvest',
-    author: 'James Wilson',
-    time: '2 weeks ago',
-    imageUrl:
-        'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=600&q=80',
-  ),
-  ArticleItem(
-    id: '7',
-    category: 'Herbal Plants',
-    title: 'How to Grow Basil, Rosemary & Mint at Home',
-    author: 'Dr. Emily Chen',
-    time: '3 weeks ago',
-    imageUrl:
-        'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=600&q=80',
-  ),
-  ArticleItem(
-    id: '8',
-    category: 'Fruit Plants',
-    title: 'Tabulampot: Growing Fruit Trees in Containers',
-    author: 'Dr. Mark Lee',
-    time: '3 weeks ago',
-    imageUrl:
-        'https://images.unsplash.com/photo-1560493676-04071c5f467b?w=600&q=80',
-  ),
-  ArticleItem(
     id: '9',
-    category: 'Indoor Plants',
+    category: 'Ornamental Plants',
     title: 'Orchid Care 101: Keep Your Orchids Blooming Year-Round',
     author: 'Dr. Sarah Lee',
     time: '1 month ago',
@@ -119,85 +68,197 @@ final List<ArticleItem> allArticles = [
         'https://images.unsplash.com/photo-1490750967868-88df5691cc5e?w=600&q=80',
   ),
   ArticleItem(
-    id: '10',
-    category: 'Pest Control',
-    title: 'Identifying Common Plant Diseases & How to Treat Them',
-    author: 'Dr. James Wilson',
+    id: '14',
+    category: 'Ornamental Plants',
+    title: 'Calathea & Aglaonema: Colourful Leaves for Any Room',
+    author: 'Dr. Emily Chen',
+    time: '3 weeks ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1637165982884-8fa7f73b0a43?w=600&q=80',
+  ),
+
+  // ── Vegetables & Food Crops ────────────────────────────────────────────────
+  ArticleItem(
+    id: '2',
+    category: 'Vegetables & Food Crops',
+    title: "Beginner's Guide to Hydroponic Lettuce Farming",
+    author: 'Michael Chen',
+    time: '5 days ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=600&q=80',
+  ),
+  ArticleItem(
+    id: '4',
+    category: 'Vegetables & Food Crops',
+    title: 'Planning Your First Vegetable Garden: A Step-by-Step Guide',
+    author: 'David Park',
+    time: '1 week ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80',
+  ),
+  ArticleItem(
+    id: '6',
+    category: 'Vegetables & Food Crops',
+    title: 'Growing Tomatoes: From Seed to Harvest',
+    author: 'James Wilson',
+    time: '2 weeks ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=600&q=80',
+  ),
+  ArticleItem(
+    id: '11',
+    category: 'Vegetables & Food Crops',
+    title: 'Natural Ways to Control Pests on Vegetable Plants',
+    author: 'Emma Rodriguez',
+    time: '1 week ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=600&q=80',
+  ),
+  ArticleItem(
+    id: '15',
+    category: 'Vegetables & Food Crops',
+    title: 'Growing Chili, Eggplant & Cucumber in Polybags',
+    author: 'Mark Thompson',
     time: '1 month ago',
     imageUrl:
-        'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=600&q=80',
+        'https://images.unsplash.com/photo-1592312040456-b66e0e40faef?w=600&q=80',
+  ),
+
+  // ── Fruit Plants ───────────────────────────────────────────────────────────
+  ArticleItem(
+    id: '8',
+    category: 'Fruit Plants',
+    title: 'Container Fruit Trees: Growing Citrus & Berries at Home',
+    author: 'Dr. Mark Lee',
+    time: '3 weeks ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1560493676-04071c5f467b?w=600&q=80',
+  ),
+  ArticleItem(
+    id: '12',
+    category: 'Fruit Plants',
+    title: 'Tabulampot Mango: Growing Mango Trees in Pots',
+    author: 'Kevin Lim',
+    time: '1 month ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1536532184021-da5392b55da1?w=600&q=80',
+  ),
+  ArticleItem(
+    id: '16',
+    category: 'Fruit Plants',
+    title: 'Strawberry at Home: Planting Tips for Pots & Planters',
+    author: 'Dr. Aisha Patel',
+    time: '5 weeks ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=600&q=80',
+  ),
+
+  // ── Herbs & Spices ─────────────────────────────────────────────────────────
+  ArticleItem(
+    id: '7',
+    category: 'Herbs & Spices',
+    title: 'How to Grow Basil, Rosemary & Mint at Home',
+    author: 'Dr. Emily Chen',
+    time: '3 weeks ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=600&q=80',
+  ),
+  ArticleItem(
+    id: '10',
+    category: 'Herbs & Spices',
+    title: 'Growing Ginger & Turmeric in Your Home Garden',
+    author: 'Dr. Priya Sharma',
+    time: '1 month ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1615485500704-8e990f9900f7?w=600&q=80',
+  ),
+  ArticleItem(
+    id: '13',
+    category: 'Herbs & Spices',
+    title: 'Aloe Vera: The Multipurpose Plant Every Home Needs',
+    author: 'Dr. Priya Sharma',
+    time: '5 weeks ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?w=600&q=80',
+  ),
+  ArticleItem(
+    id: '17',
+    category: 'Herbs & Spices',
+    title: 'Lemongrass & Pandan: Easy Tropical Herbs to Grow',
+    author: 'Marcus Thompson',
+    time: '6 weeks ago',
+    imageUrl:
+        'https://images.unsplash.com/photo-1600850056064-a8b380df8395?w=600&q=80',
   ),
 ];
 
-const List<String> _categories = [
+const List<String> artikelCategories = [
   'All',
-  'Indoor Plants',
-  'Outdoor Plants',
-  'Pest Control',
-  'Hydroponics',
-  'Herbal Plants',
+  'Ornamental Plants',
+  'Vegetables & Food Crops',
   'Fruit Plants',
+  'Herbs & Spices',
 ];
 
+// ─── Bookmark state (global) ──────────────────────────────────────────────────
 final Set<String> globalBookmarkedIds = {};
 
+// ─── Screen ───────────────────────────────────────────────────────────────────
 class UserArtikelScreen extends StatefulWidget {
   const UserArtikelScreen({super.key});
 
   @override
-  State<UserArtikelScreen> createState() => _UserArtikelScreenState();
+  State<UserArtikelScreen> createState() => UserArtikelScreenState();
 }
 
-class _UserArtikelScreenState extends State<UserArtikelScreen> {
-  int _navIndex = 1;
-  String _selectedCategory = 'All';
-  final TextEditingController _searchCtrl = TextEditingController();
-  String _searchQuery = '';
-  List<ArticleItem> _filtered = [];
+class UserArtikelScreenState extends State<UserArtikelScreen> {
+  int navIndex = 1;
+  String selectedCategory = 'All';
+  final TextEditingController searchCtrl = TextEditingController();
+  String searchQuery = '';
+  List<ArticleItem> filtered = [];
 
   @override
   void initState() {
     super.initState();
-    _filtered = List.from(allArticles);
-    _searchCtrl.addListener(_onSearch);
+    filtered = List.from(allArticles);
+    searchCtrl.addListener(onSearch);
   }
 
   @override
   void dispose() {
-    _searchCtrl.removeListener(_onSearch);
-    _searchCtrl.dispose();
+    searchCtrl.removeListener(onSearch);
+    searchCtrl.dispose();
     super.dispose();
   }
 
-  void _onSearch() {
+  void onSearch() {
     setState(() {
-      _searchQuery = _searchCtrl.text.trim().toLowerCase();
-      _applyFilter();
+      searchQuery = searchCtrl.text.trim().toLowerCase();
+      applyFilter();
     });
   }
 
-  void _applyFilter() {
-    _filtered = allArticles.where((a) {
-      final matchCategory =
-          _selectedCategory == 'All' || a.category == _selectedCategory;
-
-      final matchSearch = _searchQuery.isEmpty ||
-          a.title.toLowerCase().contains(_searchQuery) ||
-          a.author.toLowerCase().contains(_searchQuery) ||
-          a.category.toLowerCase().contains(_searchQuery);
-
-      return matchCategory && matchSearch;
+  void applyFilter() {
+    filtered = allArticles.where((a) {
+      final matchCat =
+          selectedCategory == 'All' || a.category == selectedCategory;
+      final matchSearch = searchQuery.isEmpty ||
+          a.title.toLowerCase().contains(searchQuery) ||
+          a.author.toLowerCase().contains(searchQuery) ||
+          a.category.toLowerCase().contains(searchQuery);
+      return matchCat && matchSearch;
     }).toList();
   }
 
-  void _selectCategory(String cat) {
+  void selectCategory(String cat) {
     setState(() {
-      _selectedCategory = cat;
-      _applyFilter();
+      selectedCategory = cat;
+      applyFilter();
     });
   }
 
-  void _toggleBookmark(ArticleItem article) {
+  void toggleBookmark(ArticleItem article) {
     setState(() {
       if (globalBookmarkedIds.contains(article.id)) {
         globalBookmarkedIds.remove(article.id);
@@ -209,29 +270,21 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
     });
   }
 
-  void _onNavTapped(int index) {
-    if (index == _navIndex) return;
-
-    setState(() => _navIndex = index);
-
+  void onNavTapped(int index) {
+    if (index == navIndex) return;
+    setState(() => navIndex = index);
     switch (index) {
       case 0:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HomeUserScreen()),
-        );
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (ctx) => const HomeUserScreen()));
         break;
       case 2:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const UserConsultScreen()),
-        );
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (ctx) => const UserConsultScreen()));
         break;
       case 3:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const UserSettingScreen()),
-        );
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (ctx) => const UserSettingScreen()));
         break;
     }
   }
@@ -242,16 +295,16 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
       backgroundColor: kScaffold,
       body: Column(
         children: [
-          _buildHeader(),
+          buildHeader(),
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
                   const SizedBox(height: 14),
-                  _buildCategoryTabs(),
+                  buildCategoryTabs(),
                   const SizedBox(height: 14),
-                  _filtered.isEmpty ? _buildEmpty() : _buildArticleList(),
+                  filtered.isEmpty ? buildEmpty() : buildArticleList(),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -259,11 +312,11 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: buildBottomNav(),
     );
   }
 
-  Widget _buildHeader() {
+  Widget buildHeader() {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -290,27 +343,20 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
                         color: Colors.white.withOpacity(0.25),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white, size: 16),
                     ),
                   ),
-                  Text(
-                    'Articles',
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
+                  Text('Articles',
+                      style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white)),
                   GestureDetector(
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const UserBookmarkArtikelScreen(),
-                      ),
+                          builder: (ctx) => const UserBookmarkArtikelScreen()),
                     ).then((_) => setState(() {})),
                     child: Container(
                       width: 36,
@@ -319,11 +365,8 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
                         color: Colors.white.withOpacity(0.25),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.bookmark_outline_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      child: const Icon(Icons.bookmark_outline_rounded,
+                          color: Colors.white, size: 20),
                     ),
                   ),
                 ],
@@ -336,49 +379,33 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2)),
                   ],
                 ),
                 child: TextField(
-                  controller: _searchCtrl,
+                  controller: searchCtrl,
                   textAlignVertical: TextAlignVertical.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: Colors.black87,
-                    height: 1.1,
-                  ),
+                  style: GoogleFonts.outfit(
+                      fontSize: 16, color: Colors.black87, height: 1.1),
                   decoration: InputDecoration(
                     hintText: 'Search by title or author...',
-                    hintStyle: GoogleFonts.inter(
-                      fontSize: 16,
-                      color: Colors.grey.shade400,
-                      height: 1.1,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Colors.grey.shade400,
-                      size: 24,
-                    ),
-                    suffixIcon: _searchQuery.isNotEmpty
+                    hintStyle: GoogleFonts.outfit(
+                        fontSize: 16, color: Colors.grey.shade400, height: 1.1),
+                    prefixIcon: Icon(Icons.search,
+                        color: Colors.grey.shade400, size: 24),
+                    suffixIcon: searchQuery.isNotEmpty
                         ? IconButton(
-                            onPressed: () => _searchCtrl.clear(),
-                            icon: Icon(
-                              Icons.close,
-                              size: 22,
-                              color: Colors.grey.shade400,
-                            ),
-                          )
+                            onPressed: () => searchCtrl.clear(),
+                            icon: Icon(Icons.close,
+                                size: 22, color: Colors.grey.shade400))
                         : null,
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 15,
-                    ),
+                        horizontal: 16, vertical: 15),
                   ),
                 ),
               ),
@@ -389,40 +416,35 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
     );
   }
 
-  Widget _buildCategoryTabs() {
+  Widget buildCategoryTabs() {
     return SizedBox(
       height: 36,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(left: 16, right: 6),
-        itemCount: _categories.length,
+        itemCount: artikelCategories.length,
         itemBuilder: (ctx, i) {
-          final cat = _categories[i];
-          final isSelected = cat == _selectedCategory;
-
+          final cat = artikelCategories[i];
+          final isSel = cat == selectedCategory;
           return GestureDetector(
-            onTap: () => _selectCategory(cat),
+            onTap: () => selectCategory(cat),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: isSelected ? _kTealMain : Colors.white,
+                color: isSel ? kTealMain : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isSelected ? _kTealMain : Colors.grey.shade300,
-                  width: 1.2,
-                ),
+                    color: isSel ? kTealMain : Colors.grey.shade300,
+                    width: 1.2),
               ),
               child: Center(
-                child: Text(
-                  cat,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : Colors.grey.shade600,
-                  ),
-                ),
+                child: Text(cat,
+                    style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isSel ? Colors.white : Colors.grey.shade600)),
               ),
             ),
           );
@@ -431,53 +453,45 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
     );
   }
 
-  Widget _buildEmpty() {
+  Widget buildEmpty() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 60),
       child: Column(
         children: [
           Icon(Icons.search_off_rounded, size: 52, color: Colors.grey.shade300),
           const SizedBox(height: 12),
-          Text(
-            'No articles found',
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade400,
-            ),
-          ),
+          Text('No articles found',
+              style: GoogleFonts.outfit(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade400)),
           const SizedBox(height: 4),
-          Text(
-            'Try a different keyword or category',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: Colors.grey.shade400,
-            ),
-          ),
+          Text('Try a different keyword or category',
+              style: GoogleFonts.outfit(
+                  fontSize: 13, color: Colors.grey.shade400)),
         ],
       ),
     );
   }
 
-  Widget _buildArticleList() {
+  Widget buildArticleList() {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _filtered.length,
-      itemBuilder: (ctx, i) => _buildArticleCard(_filtered[i]),
+      itemCount: filtered.length,
+      itemBuilder: (ctx, i) => buildArticleCard(filtered[i]),
     );
   }
 
-  Widget _buildArticleCard(ArticleItem article) {
+  Widget buildArticleCard(ArticleItem article) {
     final isBookmarked = globalBookmarkedIds.contains(article.id);
 
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => UserDetailArtikelScreen(article: article),
-        ),
+            builder: (ctx) => UserDetailArtikelScreen(article: article)),
       ).then((_) => setState(() {})),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -486,10 +500,9 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 3)),
           ],
         ),
         child: Column(
@@ -507,14 +520,13 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
                     fit: BoxFit.cover,
                     loadingBuilder: (ctx, child, progress) {
                       if (progress == null) return child;
-
                       return Container(
                         height: 180,
                         color: kTeal.withOpacity(0.15),
                         child: Center(
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: _kTealMain,
+                            color: kTealMain,
                             value: progress.expectedTotalBytes != null
                                 ? progress.cumulativeBytesLoaded /
                                     progress.expectedTotalBytes!
@@ -523,15 +535,12 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
                         ),
                       );
                     },
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (ctx, e, s) => Container(
                       height: 180,
                       color: kLGreen.withOpacity(0.3),
                       child: Center(
-                        child: Icon(
-                          Icons.eco_rounded,
-                          color: Colors.green.shade300,
-                          size: 40,
-                        ),
+                        child: Icon(Icons.eco_rounded,
+                            color: Colors.green.shade300, size: 40),
                       ),
                     ),
                   ),
@@ -540,22 +549,21 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
                   top: 10,
                   right: 10,
                   child: GestureDetector(
-                    onTap: () => _toggleBookmark(article),
+                    onTap: () => toggleBookmark(article),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       width: 34,
                       height: 34,
                       decoration: BoxDecoration(
                         color: isBookmarked
-                            ? _kTealMain
+                            ? kTealMain
                             : Colors.white.withOpacity(0.9),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2)),
                         ],
                       ),
                       child: Icon(
@@ -576,51 +584,33 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    article.category,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: _kTealMain,
-                    ),
-                  ),
+                  Text(article.category,
+                      style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: kTealMain)),
                   const SizedBox(height: 5),
-                  Text(
-                    article.title,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                      height: 1.35,
-                    ),
-                  ),
+                  Text(article.title,
+                      style: GoogleFonts.outfit(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                          height: 1.35)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Text(
-                        article.author,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
+                      Text(article.author,
+                          style: GoogleFonts.outfit(
+                              fontSize: 12, color: Colors.grey.shade500)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Text(
-                          '•',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.grey.shade400,
-                          ),
-                        ),
+                        child: Text('•',
+                            style: GoogleFonts.outfit(
+                                fontSize: 12, color: Colors.grey.shade400)),
                       ),
-                      Text(
-                        article.time,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.grey.shade400,
-                        ),
-                      ),
+                      Text(article.time,
+                          style: GoogleFonts.outfit(
+                              fontSize: 12, color: Colors.grey.shade400)),
                     ],
                   ),
                 ],
@@ -632,27 +622,27 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
     );
   }
 
-  Widget _buildBottomNav() {
-    final items = [
+  Widget buildBottomNav() {
+    final List<Map<String, dynamic>> items = [
       {
         'label': 'Home',
         'icon': 'assets/images/home.png',
-        'fallback': Icons.home_outlined,
+        'fallback': Icons.home_outlined
       },
       {
         'label': 'Articles',
         'icon': 'assets/images/article.png',
-        'fallback': Icons.article_outlined,
+        'fallback': Icons.article_outlined
       },
       {
         'label': 'Consultations',
         'icon': 'assets/images/consultation.png',
-        'fallback': Icons.chat_bubble_outline,
+        'fallback': Icons.chat_bubble_outline
       },
       {
         'label': 'Account',
         'icon': 'assets/images/user.png',
-        'fallback': Icons.person_outline,
+        'fallback': Icons.person_outline
       },
     ];
 
@@ -661,10 +651,9 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, -4)),
         ],
       ),
       child: SafeArea(
@@ -673,36 +662,36 @@ class _UserArtikelScreenState extends State<UserArtikelScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(items.length, (index) {
-              final isSelected = _navIndex == index;
-
+              final bool isSel = navIndex == index;
               return GestureDetector(
-                onTap: () => _onNavTapped(index),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      items[index]['icon'] as String,
-                      width: 24,
-                      height: 24,
-                      fit: BoxFit.contain,
-                      color: isSelected ? _kTealMain : Colors.grey.shade400,
-                      errorBuilder: (_, __, ___) => Icon(
-                        items[index]['fallback'] as IconData,
-                        color: isSelected ? _kTealMain : Colors.grey.shade400,
-                        size: 24,
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onNavTapped(index),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        items[index]['icon'] as String,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.contain,
+                        color: isSel ? kTealMain : Colors.grey.shade400,
+                        errorBuilder: (ctx, e, s) => Icon(
+                            items[index]['fallback'] as IconData,
+                            color: isSel ? kTealMain : Colors.grey.shade400,
+                            size: 24),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      items[index]['label'] as String,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w400,
-                        color: isSelected ? _kTealMain : Colors.grey.shade400,
-                      ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(items[index]['label'] as String,
+                          style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight:
+                                  isSel ? FontWeight.w600 : FontWeight.w400,
+                              color: isSel ? kTealMain : Colors.grey.shade400)),
+                    ],
+                  ),
                 ),
               );
             }),

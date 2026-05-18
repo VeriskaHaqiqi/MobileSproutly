@@ -31,9 +31,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _passVisible = false;
   bool _confirmVisible = false;
 
-  bool isValidGmail(String email) {
-    return RegExp(r'^[\w\.-]+@gmail\.com$').hasMatch(email);
+  bool isValidGmail(String email) =>
+      RegExp(r'^[\w\.-]+@gmail\.com$').hasMatch(email);
+
+  bool isValidPhone(String phone) {
+    final digits = phone.replaceAll(RegExp(r'[^\d]'), '');
+    return digits.length >= 9 && digits.length <= 15;
   }
+
+  // Sama persis dengan expert_register: min 8 karakter, minimal 1 angka
+  bool isValidPassword(String pass) =>
+      pass.length >= 8 && RegExp(r'\d').hasMatch(pass);
 
   @override
   void dispose() {
@@ -47,8 +55,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _handleRegister() {
     setState(() {
+      // Name
       _nameErr = _nameCtrl.text.trim().isEmpty ? 'Full name is required' : null;
 
+      // Email
       if (_emailCtrl.text.trim().isEmpty) {
         _emailErr = 'Email is required';
       } else if (!isValidGmail(_emailCtrl.text.trim())) {
@@ -57,11 +67,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _emailErr = null;
       }
 
-      _phoneErr =
-          _phoneCtrl.text.trim().isEmpty ? 'Phone number is required' : null;
+      // Phone
+      if (_phoneCtrl.text.trim().isEmpty) {
+        _phoneErr = 'Phone number is required';
+      } else if (!isValidPhone(_phoneCtrl.text.trim())) {
+        _phoneErr = 'Enter a valid phone number (min. 9 digits)';
+      } else {
+        _phoneErr = null;
+      }
 
-      _passErr = _passCtrl.text.trim().isEmpty ? 'Password is required' : null;
+      // Password — min 8 chars + 1 number
+      if (_passCtrl.text.trim().isEmpty) {
+        _passErr = 'Password is required';
+      } else if (!isValidPassword(_passCtrl.text)) {
+        _passErr = 'Min 8 characters, include at least 1 number';
+      } else {
+        _passErr = null;
+      }
 
+      // Confirm password
       if (_confirmCtrl.text.trim().isEmpty) {
         _confirmErr = 'Please confirm your password';
       } else if (_confirmCtrl.text != _passCtrl.text) {
@@ -77,14 +101,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _passErr != null ||
         _confirmErr != null) return;
 
-    // Setelah register berhasil → kembali ke LoginScreen
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => const LoginScreen(),
-        transitionsBuilder: (_, animation, __, child) => FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
         transitionDuration: const Duration(milliseconds: 400),
       ),
       (route) => false,
@@ -119,26 +140,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Back Button ──
               const BackButtonWidget(),
               const SizedBox(height: 12),
 
-              // ── Heading ──
-              Text(
-                'Create Account',
-                style: GoogleFonts.outfit(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
-                  letterSpacing: -0.3,
-                ),
-              ),
+              Text('Create Account',
+                  style: GoogleFonts.outfit(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textDark,
+                    letterSpacing: -0.3,
+                  )),
               const SizedBox(height: 6),
-              Text(
-                'Join Sproutly to connect with plant experts',
-                style: GoogleFonts.outfit(
-                    fontSize: 13.5, color: AppColors.textGrey),
-              ),
+              Text('Join Sproutly to connect with plant experts',
+                  style: GoogleFonts.outfit(
+                      fontSize: 13.5, color: AppColors.textGrey)),
               const SizedBox(height: 20),
 
               // ── Tab Switcher ──
@@ -155,7 +170,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ── Form Fields ──
               AppTextField(
                 label: 'Full Name',
                 hint: 'John Doe',
@@ -183,14 +197,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 14),
 
               // ── Gender ──
-              Text(
-                'Gender',
-                style: GoogleFonts.outfit(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textDark,
-                ),
-              ),
+              Text('Gender',
+                  style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark)),
               const SizedBox(height: 8),
               Row(
                 children: ['Male', 'Female'].map((g) {
@@ -215,17 +226,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               width: 1.5,
                             ),
                           ),
-                          child: Text(
-                            g,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.outfit(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: _selectedGender == g
-                                  ? AppColors.tealDark
-                                  : AppColors.textDark,
-                            ),
-                          ),
+                          child: Text(g,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.outfit(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: _selectedGender == g
+                                    ? AppColors.tealDark
+                                    : AppColors.textDark,
+                              )),
                         ),
                       ),
                     ),
@@ -234,7 +243,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 14),
 
-              // ── Password dengan toggle visibility ──
+              // ── Password ──
               _buildPasswordField(
                 label: 'Password',
                 hint: '••••••••',
@@ -243,9 +252,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 isVisible: _passVisible,
                 onToggle: () => setState(() => _passVisible = !_passVisible),
               ),
+              // Helper text — hanya muncul kalau tidak ada error
+              if (_passErr == null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: Text(
+                    'Min 8 characters, include at least 1 number',
+                    style: GoogleFonts.outfit(
+                        fontSize: 11, color: AppColors.textGrey),
+                  ),
+                ),
               const SizedBox(height: 14),
 
-              // ── Confirm Password dengan toggle visibility ──
+              // ── Confirm Password ──
               _buildPasswordField(
                 label: 'Confirm Password',
                 hint: '••••••••',
@@ -257,30 +276,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 22),
 
-              // ── Create Account Button ──
               PrimaryButton(text: 'Create Account', onPressed: _handleRegister),
               const SizedBox(height: 22),
 
-              // ── Log In Link ──
               Center(
                 child: Column(
                   children: [
-                    Text(
-                      'Already have an account?',
-                      style: GoogleFonts.outfit(
-                          fontSize: 13.5, color: AppColors.textGrey),
-                    ),
+                    Text('Already have an account?',
+                        style: GoogleFonts.outfit(
+                            fontSize: 13.5, color: AppColors.textGrey)),
                     const SizedBox(height: 4),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: Text(
-                        'Log In',
-                        style: GoogleFonts.outfit(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.tealDark,
-                        ),
-                      ),
+                      child: Text('Log In',
+                          style: GoogleFonts.outfit(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.tealDark,
+                          )),
                     ),
                   ],
                 ),
@@ -292,7 +305,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ── Password Field dengan Eye Toggle ────────────────────────────────────────
   Widget _buildPasswordField({
     required String label,
     required String hint,
@@ -304,14 +316,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: GoogleFonts.outfit(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textDark,
-          ),
-        ),
+        Text(label,
+            style: GoogleFonts.outfit(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark)),
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
@@ -330,15 +339,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: controller,
                   obscureText: !isVisible,
                   style: GoogleFonts.outfit(
-                    fontSize: 14,
-                    color: AppColors.textDark,
-                  ),
+                      fontSize: 14, color: AppColors.textDark),
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: GoogleFonts.outfit(
-                      fontSize: 14,
-                      color: AppColors.textGrey.withOpacity(0.6),
-                    ),
+                        fontSize: 14,
+                        color: AppColors.textGrey.withOpacity(0.6)),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 14),
@@ -364,19 +370,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         if (errorText != null) ...[
           const SizedBox(height: 5),
-          Text(
-            errorText,
-            style: GoogleFonts.outfit(
-              fontSize: 12,
-              color: Colors.redAccent,
-            ),
-          ),
+          Text(errorText,
+              style: GoogleFonts.outfit(fontSize: 12, color: Colors.redAccent)),
         ],
       ],
     );
   }
 
-  // ── Tab Builder ──────────────────────────────────────────────────────────────
   Widget _buildTab(String label, bool isUser) {
     final isActive = _isUser == isUser;
     return Expanded(
@@ -404,15 +404,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ]
                 : null,
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: isActive ? AppColors.white : AppColors.textGrey,
-            ),
-          ),
+          child: Text(label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isActive ? AppColors.white : AppColors.textGrey,
+              )),
         ),
       ),
     );
