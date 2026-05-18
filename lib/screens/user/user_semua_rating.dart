@@ -311,23 +311,33 @@ class UserSemuaRatingScreenState extends State<UserSemuaRatingScreen> {
     final reviews = filteredReviews;
 
     if (reviews.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        child: Column(
-          children: [
-            Icon(Icons.star_outline_rounded,
-                size: 48, color: Colors.grey.shade300),
-            const SizedBox(height: 12),
-            Text(
-              filterStars == 0
-                  ? 'No reviews yet'
-                  : 'No $filterStars-star reviews',
-              style: GoogleFonts.outfit(
-                  fontSize: 15,
+      return SizedBox(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 70),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.star_outline_rounded,
+                size: 58,
+                color: Colors.grey.shade300,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                filterStars == 0
+                    ? 'No reviews yet'
+                    : 'No $filterStars-star reviews',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade400),
-            ),
-          ],
+                  color: Colors.grey.shade400,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
