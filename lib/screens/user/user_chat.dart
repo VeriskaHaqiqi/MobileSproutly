@@ -1,62 +1,72 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+
 import 'user_consult.dart';
 
-const Color _chatMain = Color(0xFF5DCFCF);
-const Color _chatTeal = Color(0xFF76EAD0);
-const Color _chatBlue = Color(0xFF76D7EA);
-const Color _chatLGreen = Color(0xFFD0FF99);
-const Color _chatScaffold = Color(0xFFF0F4F3);
+const Color kChatTeal = Color(0xFF76EAD0);
+const Color kChatBlue = Color(0xFF76D7EA);
+const Color kChatMain = Color(0xFF5DCFCF);
+const Color kChatLGreen = Color(0xFFD0FF99);
+const Color kChatScaffold = Color(0xFFE8F5F3);
 
-// ─── Message Model ────────────────────────────────────────────────────────────
+enum MessageType { text, image, video }
+
 class ChatMessage {
-  final String text;
+  final String? text;
   final bool isMe;
   final String time;
+  final MessageType type;
+  final String? mediaUrl;
+  final File? mediaFile;
+  final String? videoDuration;
 
   const ChatMessage({
-    required this.text,
+    this.text,
     required this.isMe,
     required this.time,
+    this.type = MessageType.text,
+    this.mediaUrl,
+    this.mediaFile,
+    this.videoDuration,
   });
 }
 
-// ─── Dummy Messages ───────────────────────────────────────────────────────────
-List<ChatMessage> _getDummyMessages(ConsultItem consult) {
+List<ChatMessage> buildDummyMessages(ConsultItem consult) {
   return [
     ChatMessage(
       text:
-          "Hello! I need some advice about my ${consult.topics.isNotEmpty ? consult.topics.first : 'plant'}. The leaves are showing some unusual signs.",
-      isMe: true,
-      time: '10:00 AM',
-    ),
-    ChatMessage(
-      text:
-          "Hi! I'm ${consult.expertName}, your ${consult.specialty} at Sproutly. I'd be happy to help! Could you describe the symptoms in more detail?",
+          "Hi! I'm ${consult.expertName.split(' ').first}, your plant expert for today. Can you tell me more about the symptoms you've noticed?",
       isMe: false,
-      time: '10:02 AM',
+      time: '2:34 PM',
     ),
-    ChatMessage(
+    const ChatMessage(
       text:
-          "The leaves are turning yellow from the edges inward. Some have brown spots too. I water it every 2 days.",
+          'The leaves are turning yellow and have brown spots. It started about a week ago.',
       isMe: true,
-      time: '10:05 AM',
+      time: '2:35 PM',
     ),
-    ChatMessage(
+    const ChatMessage(
       text:
-          "That sounds like it could be overwatering combined with a nutrient deficiency. Can you send me a photo of the plant and the soil?",
+          'That sounds like it could be overwatering or a fungal issue. Could you send me a photo of the affected leaves?',
       isMe: false,
-      time: '10:07 AM',
+      time: '2:36 PM',
     ),
-    ChatMessage(
-      text: "Sure, let me take a few photos now.",
+    const ChatMessage(
+      type: MessageType.image,
+      mediaUrl:
+          'https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=500&q=80',
+      text: "Here's the worst affected leaf",
       isMe: true,
-      time: '10:09 AM',
+      time: '2:38 PM',
     ),
-    ChatMessage(
-      text: consult.lastMessage,
+    const ChatMessage(
+      text:
+          "Perfect! I can see this is likely overwatering combined with poor drainage. Let's start treatment immediately.",
       isMe: false,
-      time: consult.time,
+      time: '2:40 PM',
     ),
   ];
 }
@@ -64,96 +74,731 @@ List<ChatMessage> _getDummyMessages(ConsultItem consult) {
 class UserChatScreen extends StatefulWidget {
   final ConsultItem consult;
 
-  const UserChatScreen({super.key, required this.consult});
+  const UserChatScreen({
+    super.key,
+    required this.consult,
+  });
 
   @override
-  State<UserChatScreen> createState() => _UserChatScreenState();
+  State<UserChatScreen> createState() => UserChatScreenState();
 }
 
-class _UserChatScreenState extends State<UserChatScreen> {
-  final TextEditingController _msgCtrl = TextEditingController();
-  final ScrollController _scrollCtrl = ScrollController();
-  late List<ChatMessage> _messages;
-  bool _hasText = false;
+class UserChatScreenState extends State<UserChatScreen> {
+  final TextEditingController msgCtrl = TextEditingController();
+  final ScrollController scrollCtrl = ScrollController();
+  final ImagePicker picker = ImagePicker();
+
+  late List<ChatMessage> messages;
+  bool hasText = false;
+  int replyIndex = 0;
+
+  static const List<String> expertReplies = [
+    "Thank you for sharing that. Based on what you've described, I'd recommend reducing your watering frequency and checking the drainage holes.",
+    "That sounds like a common issue with indoor plants. Let the soil dry slightly before the next watering.",
+    "The symptoms may indicate early root stress. Try checking the roots and removing any dark or mushy parts.",
+    "For this type of plant, bright indirect light is usually best. Avoid direct afternoon sun.",
+    "Please keep monitoring the new growth. Healthy new leaves are a good sign of recovery.",
+    "If you can, send another photo from the top and side of the plant so I can check the overall condition.",
+    "You can also wipe the leaves gently with a damp cloth to remove dust and improve photosynthesis.",
+    "This may also be related to pests. Check the underside of the leaves for tiny insects or webbing.",
+  ];
 
   @override
   void initState() {
     super.initState();
-    _messages = _getDummyMessages(widget.consult);
-    _msgCtrl.addListener(() {
-      setState(() => _hasText = _msgCtrl.text.trim().isNotEmpty);
+
+    messages = buildDummyMessages(widget.consult);
+
+    msgCtrl.addListener(() {
+      setState(() {
+        hasText = msgCtrl.text.trim().isNotEmpty;
+      });
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToBottom();
     });
   }
 
   @override
   void dispose() {
-    _msgCtrl.dispose();
-    _scrollCtrl.dispose();
+    msgCtrl.dispose();
+    scrollCtrl.dispose();
     super.dispose();
   }
 
-  void _sendMessage() {
-    final text = _msgCtrl.text.trim();
+  void scrollToBottom() {
+    if (!scrollCtrl.hasClients) return;
+
+    scrollCtrl.animateTo(
+      scrollCtrl.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  String currentTime() {
+    final now = DateTime.now();
+    final hour = now.hour > 12
+        ? now.hour - 12
+        : now.hour == 0
+            ? 12
+            : now.hour;
+    final minute = now.minute.toString().padLeft(2, '0');
+    final period = now.hour >= 12 ? 'PM' : 'AM';
+
+    return '$hour:$minute $period';
+  }
+
+  void triggerAutoReply() {
+    final reply = expertReplies[replyIndex % expertReplies.length];
+    replyIndex++;
+
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (!mounted) return;
+
+      setState(() {
+        messages.add(
+          ChatMessage(
+            text: reply,
+            isMe: false,
+            time: currentTime(),
+          ),
+        );
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollToBottom();
+      });
+    });
+  }
+
+  void sendText() {
+    final text = msgCtrl.text.trim();
     if (text.isEmpty) return;
 
     setState(() {
-      _messages.add(ChatMessage(
-        text: text,
-        isMe: true,
-        time: _currentTime(),
-      ));
-      _msgCtrl.clear();
+      messages.add(
+        ChatMessage(
+          text: text,
+          isMe: true,
+          time: currentTime(),
+        ),
+      );
+      msgCtrl.clear();
     });
 
-    // Auto-scroll to bottom
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollCtrl.hasClients) {
-        _scrollCtrl.animateTo(
-          _scrollCtrl.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+      scrollToBottom();
     });
+
+    triggerAutoReply();
   }
 
-  String _currentTime() {
-    final now = DateTime.now();
-    final h = now.hour.toString().padLeft(2, '0');
-    final m = now.minute.toString().padLeft(2, '0');
-    return '$h:$m';
+  Future<void> pickImage() async {
+    try {
+      final XFile? file = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (file == null) return;
+
+      setState(() {
+        messages.add(
+          ChatMessage(
+            type: MessageType.image,
+            mediaFile: File(file.path),
+            isMe: true,
+            time: currentTime(),
+          ),
+        );
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollToBottom();
+      });
+
+      triggerAutoReply();
+    } catch (_) {}
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _chatScaffold,
-      body: Column(
+  Future<void> pickVideo() async {
+    try {
+      final XFile? file = await picker.pickVideo(
+        source: ImageSource.gallery,
+      );
+
+      if (file == null) return;
+
+      setState(() {
+        messages.add(
+          ChatMessage(
+            type: MessageType.video,
+            mediaFile: File(file.path),
+            videoDuration: '0:00',
+            isMe: true,
+            time: currentTime(),
+          ),
+        );
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollToBottom();
+      });
+
+      triggerAutoReply();
+    } catch (_) {}
+  }
+
+  void showExpertProfile(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.78,
+          maxChildSize: 0.9,
+          minChildSize: 0.45,
+          builder: (ctx, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF0F4F3),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.pop(ctx),
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: kChatTeal.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: kChatMain,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Expert Information',
+                          style: GoogleFonts.outfit(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(
+                    color: Colors.grey.shade200,
+                    height: 1,
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildExpertProfileCard(),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              _buildSimpleExpertStat(
+                                '120+',
+                                'Consultations',
+                                Icons.chat_bubble_outline_rounded,
+                                const Color(0xFFD0FF99),
+                              ),
+                              const SizedBox(width: 10),
+                              _buildSimpleExpertStat(
+                                '4.9',
+                                'Rating',
+                                Icons.star_outline_rounded,
+                                const Color(0xFF99FF99),
+                              ),
+                              const SizedBox(width: 10),
+                              _buildSimpleExpertStat(
+                                'Fast',
+                                'Response',
+                                Icons.access_time_rounded,
+                                kChatTeal,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          _buildSimpleReviewsCard(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildExpertProfileCard() {
+    final consult = widget.consult;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(),
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollCtrl,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              physics: const BouncingScrollPhysics(),
-              itemCount: _messages.length,
-              itemBuilder: (ctx, i) => _buildMessageBubble(_messages[i]),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: kChatTeal,
+                        width: 2.5,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: Image.network(
+                        consult.avatarUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (ctx, e, s) {
+                          return Container(
+                            color: kChatTeal.withOpacity(0.2),
+                            child: Center(
+                              child: Text(
+                                consult.expertName[0],
+                                style: GoogleFonts.outfit(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w700,
+                                  color: kChatMain,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 2,
+                    right: 2,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: consult.isOnline
+                            ? const Color(0xFF4CAF50)
+                            : Colors.grey,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 11,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      consult.expertName,
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      consult.specialty,
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        color: kChatMain,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          color: Color(0xFFFFBB00),
+                          size: 15,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          '4.9',
+                          style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: kChatTeal.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '8 years',
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: kChatMain,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      consult.isOnline ? 'Available now' : 'Currently offline',
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: consult.isOnline
+                            ? const Color(0xFF2E7D32)
+                            : Colors.orange.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Divider(color: Colors.grey.shade100),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(
+                Icons.school_outlined,
+                size: 16,
+                color: Colors.grey.shade500,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Certified plant care specialist with experience in ${consult.specialty.toLowerCase()}.',
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Divider(color: Colors.grey.shade100),
+          const SizedBox(height: 10),
+          Text(
+            'Plant Specializations',
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
             ),
           ),
-          _buildInputBar(),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: consult.topics.take(6).map((topic) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: kChatTeal.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: kChatTeal.withOpacity(0.4),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  topic,
+                  style: GoogleFonts.outfit(
+                    fontSize: 11,
+                    color: kChatMain,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 12),
+          Divider(color: Colors.grey.shade100),
+          const SizedBox(height: 10),
+          Text(
+            'About',
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '${consult.expertName} helps users diagnose plant problems, understand proper care routines, and improve plant health through practical consultation.',
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+              height: 1.6,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // ── Header ───────────────────────────────────────────────────────────────────
-  Widget _buildHeader() {
+  Widget _buildSimpleExpertStat(
+    String value,
+    String label,
+    IconData icon,
+    Color color,
+  ) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 10,
+        ),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.25),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.4),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 16,
+                color: kChatMain,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: GoogleFonts.outfit(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                fontSize: 10,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSimpleReviewsCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Recent Reviews',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildReviewItem(
+            name: 'Amanda',
+            comment:
+                'Very helpful explanation. My plant started recovering after following the advice.',
+          ),
+          Divider(color: Colors.grey.shade100, height: 20),
+          _buildReviewItem(
+            name: 'Kevin',
+            comment:
+                'Clear and practical guidance. The expert explained the issue in a simple way.',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewItem({
+    required String name,
+    required String comment,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 18,
+          backgroundColor: kChatTeal.withOpacity(0.2),
+          child: Text(
+            name[0],
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: kChatMain,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Row(
+                    children: List.generate(
+                      5,
+                      (index) => const Icon(
+                        Icons.star_rounded,
+                        color: Color(0xFFFFBB00),
+                        size: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                comment,
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kChatScaffold,
+      body: Column(
+        children: [
+          buildHeader(),
+          buildSessionBanner(),
+          Expanded(
+            child: ListView.builder(
+              controller: scrollCtrl,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              physics: const BouncingScrollPhysics(),
+              itemCount: messages.length,
+              itemBuilder: (ctx, i) {
+                return buildMessageItem(messages[i]);
+              },
+            ),
+          ),
+          buildInputBar(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHeader() {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [_chatBlue, _chatTeal],
+          colors: [kChatBlue, kChatTeal],
         ),
       ),
       child: SafeArea(
@@ -171,110 +816,23 @@ class _UserChatScreenState extends State<UserChatScreen> {
                     color: Colors.white.withOpacity(0.25),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 16),
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              // Avatar
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(22),
-                    child: Image.network(
-                      widget.consult.avatarUrl,
-                      width: 44,
-                      height: 44,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.3),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            widget.consult.expertName[0],
-                            style: GoogleFonts.outfit(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 16,
                   ),
-                  if (widget.consult.isOnline)
-                    Positioned(
-                      bottom: 1,
-                      right: 1,
-                      child: Container(
-                        width: 11,
-                        height: 11,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
               const SizedBox(width: 12),
-
-              // Name + specialty
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.consult.expertName,
-                      style: GoogleFonts.outfit(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        if (widget.consult.isOnline) ...[
-                          Container(
-                            width: 6,
-                            height: 6,
-                            margin: const EdgeInsets.only(right: 4),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF4CAF50),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ],
-                        Text(
-                          widget.consult.isOnline
-                              ? 'Online'
-                              : widget.consult.specialty,
-                          style: GoogleFonts.outfit(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.85),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                child: Text(
+                  'Consultations Chat',
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-
-              // Info icon
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.info_outline_rounded,
-                    color: Colors.white, size: 18),
               ),
             ],
           ),
@@ -283,100 +841,521 @@ class _UserChatScreenState extends State<UserChatScreen> {
     );
   }
 
-  // ── Message Bubble ────────────────────────────────────────────────────────────
-  Widget _buildMessageBubble(ChatMessage msg) {
-    final isMe = msg.isMe;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+  Widget buildExpertCard() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isMe) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                widget.consult.avatarUrl,
-                width: 32,
-                height: 32,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: _chatTeal.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      widget.consult.expertName[0],
-                      style: GoogleFonts.outfit(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: _chatMain),
-                    ),
-                  ),
+          Stack(
+            children: [
+              ClipOval(
+                child: Image.network(
+                  widget.consult.avatarUrl,
+                  width: 52,
+                  height: 52,
+                  fit: BoxFit.cover,
+                  errorBuilder: (ctx, e, s) {
+                    return Container(
+                      width: 52,
+                      height: 52,
+                      color: kChatTeal.withOpacity(0.2),
+                      child: Center(
+                        child: Text(
+                          widget.consult.expertName[0],
+                          style: GoogleFonts.outfit(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: kChatMain,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Column(
-              crossAxisAlignment:
-                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.68,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isMe ? _chatMain : Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft: Radius.circular(isMe ? 16 : 4),
-                      bottomRight: Radius.circular(isMe ? 4 : 16),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
+              if (widget.consult.isOnline)
+                Positioned(
+                  bottom: 1,
+                  right: 1,
+                  child: Container(
+                    width: 13,
+                    height: 13,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    msg.text,
-                    style: GoogleFonts.outfit(
-                      fontSize: 13,
-                      color: isMe ? Colors.white : Colors.black87,
-                      height: 1.45,
                     ),
                   ),
                 ),
-                const SizedBox(height: 3),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  msg.time,
+                  widget.consult.expertName,
                   style: GoogleFonts.outfit(
-                      fontSize: 10, color: Colors.grey.shade400),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  widget.consult.specialty,
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    color: kChatMain,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xFFFFBB00),
+                      size: 14,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      '4.9',
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      '  •  8 years exp',
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          if (isMe) const SizedBox(width: 4),
+          GestureDetector(
+            onTap: () => showExpertProfile(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: kChatMain,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'View Profile',
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // ── Input Bar ─────────────────────────────────────────────────────────────────
-  Widget _buildInputBar() {
+  Widget buildSessionBanner() {
+    return Column(
+      children: [
+        buildExpertCard(),
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 10,
+          ),
+          decoration: BoxDecoration(
+            color: kChatTeal.withOpacity(0.25),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF4CAF50),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Session Active',
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '45-minute consultation',
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 4, 18, 8),
+          child: Text(
+            'Send photos or videos for better diagnosis',
+            style: GoogleFonts.outfit(
+              fontSize: 11,
+              color: Colors.grey.shade500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildMessageItem(ChatMessage msg) {
+    final isMe = msg.isMe;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment:
+                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isMe) ...[
+                ClipOval(
+                  child: Image.network(
+                    widget.consult.avatarUrl,
+                    width: 34,
+                    height: 34,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, e, s) {
+                      return Container(
+                        width: 34,
+                        height: 34,
+                        color: kChatTeal.withOpacity(0.3),
+                        child: Center(
+                          child: Text(
+                            widget.consult.expertName[0],
+                            style: GoogleFonts.outfit(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: kChatMain,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Flexible(
+                child: buildBubble(msg),
+              ),
+              if (isMe) const SizedBox(width: 4),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+              top: 4,
+              bottom: 10,
+              left: isMe ? 0 : 42,
+              right: isMe ? 4 : 0,
+            ),
+            child: Text(
+              msg.time,
+              style: GoogleFonts.outfit(
+                fontSize: 10,
+                color: Colors.grey.shade400,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildBubble(ChatMessage msg) {
+    final isMe = msg.isMe;
+    final maxWidth = MediaQuery.of(context).size.width * 0.68;
+
+    switch (msg.type) {
+      case MessageType.image:
+        return buildImageBubble(msg, isMe, maxWidth);
+      case MessageType.video:
+        return buildVideoBubble(msg, isMe, maxWidth);
+      case MessageType.text:
+        return buildTextBubble(msg, isMe, maxWidth);
+    }
+  }
+
+  Widget buildTextBubble(ChatMessage msg, bool isMe, double maxWidth) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 11,
+      ),
+      decoration: BoxDecoration(
+        color: isMe ? kChatMain : Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        msg.text ?? '',
+        style: GoogleFonts.outfit(
+          fontSize: 14,
+          color: isMe ? Colors.white : Colors.black87,
+          height: 1.45,
+        ),
+      ),
+    );
+  }
+
+  Widget buildImageBubble(ChatMessage msg, bool isMe, double maxWidth) {
+    return Container(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      decoration: BoxDecoration(
+        color: isMe ? kChatMain.withOpacity(0.9) : Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(18),
+            ),
+            child: msg.mediaFile != null
+                ? Image.file(
+                    msg.mediaFile!,
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  )
+                : Image.network(
+                    msg.mediaUrl ?? '',
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (ctx, child, p) {
+                      if (p == null) return child;
+
+                      return Container(
+                        height: 200,
+                        color: kChatTeal.withOpacity(0.2),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: kChatMain,
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (ctx, e, s) {
+                      return Container(
+                        height: 200,
+                        color: kChatTeal.withOpacity(0.2),
+                        child: const Icon(
+                          Icons.image_outlined,
+                          color: kChatMain,
+                          size: 40,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          if (msg.text != null && msg.text!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+              child: Text(
+                msg.text!,
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  color: isMe ? Colors.white : Colors.black87,
+                  height: 1.4,
+                ),
+              ),
+            )
+          else
+            const SizedBox(height: 4),
+        ],
+      ),
+    );
+  }
+
+  Widget buildVideoBubble(ChatMessage msg, bool isMe, double maxWidth) {
+    return Container(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 18),
+        ),
+        child: Stack(
+          children: [
+            msg.mediaFile != null
+                ? Container(
+                    height: 200,
+                    width: double.infinity,
+                    color: Colors.black54,
+                    child: const Icon(
+                      Icons.videocam,
+                      color: Colors.white54,
+                      size: 48,
+                    ),
+                  )
+                : Image.network(
+                    msg.mediaUrl ?? '',
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (ctx, child, p) {
+                      if (p == null) return child;
+
+                      return Container(
+                        height: 200,
+                        color: Colors.black38,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (ctx, e, s) {
+                      return Container(
+                        height: 200,
+                        color: Colors.black54,
+                        child: const Icon(
+                          Icons.videocam,
+                          color: Colors.white54,
+                          size: 48,
+                        ),
+                      );
+                    },
+                  ),
+            Positioned.fill(
+              child: Center(
+                child: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+              ),
+            ),
+            if (msg.videoDuration != null)
+              Positioned(
+                bottom: 8,
+                right: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    msg.videoDuration!,
+                    style: GoogleFonts.outfit(
+                      fontSize: 11,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildInputBar() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -390,63 +1369,92 @@ class _UserChatScreenState extends State<UserChatScreen> {
       child: SafeArea(
         top: false,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // Attachment icon
             GestureDetector(
-              onTap: () {},
+              onTap: pickImage,
               child: Container(
-                width: 40,
-                height: 40,
+                width: 42,
+                height: 42,
+                margin: const EdgeInsets.only(right: 8),
                 decoration: BoxDecoration(
-                  color: _chatScaffold,
-                  shape: BoxShape.circle,
+                  color: kChatTeal.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.attach_file_rounded,
-                    color: Colors.grey.shade500, size: 20),
+                child: const Icon(
+                  Icons.image_outlined,
+                  color: kChatMain,
+                  size: 22,
+                ),
               ),
             ),
-            const SizedBox(width: 10),
-
-            // Text input
+            GestureDetector(
+              onTap: pickVideo,
+              child: Container(
+                width: 42,
+                height: 42,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: kChatTeal.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.videocam_outlined,
+                  color: kChatMain,
+                  size: 22,
+                ),
+              ),
+            ),
             Expanded(
               child: Container(
+                constraints: const BoxConstraints(maxHeight: 120),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: _chatScaffold,
+                  color: const Color(0xFFF0F4F3),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(
-                  controller: _msgCtrl,
-                  maxLines: 4,
+                  controller: msgCtrl,
+                  maxLines: 5,
                   minLines: 1,
-                  style:
-                      GoogleFonts.outfit(fontSize: 14, color: Colors.black87),
+                  textAlignVertical: TextAlignVertical.center,
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
                   decoration: InputDecoration(
-                    hintText: 'Type a message...',
+                    hintText: 'Type your message...',
                     hintStyle: GoogleFonts.outfit(
-                        fontSize: 14, color: Colors.grey.shade400),
+                      fontSize: 14,
+                      color: Colors.grey.shade400,
+                    ),
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
-
-            // Send button
+            const SizedBox(width: 8),
             GestureDetector(
-              onTap: _sendMessage,
+              onTap: sendText,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 40,
-                height: 40,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: _hasText ? _chatMain : Colors.grey.shade300,
+                  color: hasText ? kChatMain : Colors.grey.shade300,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.send_rounded,
-                    color: Colors.white, size: 18),
+                child: const Icon(
+                  Icons.send_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
               ),
             ),
           ],
